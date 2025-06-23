@@ -74,7 +74,7 @@ class DUMMYAdapter:
 ```
 
 Sample Usage:
-```
+```python
 from adapters.dummy_adapter import DUMMYAdapter
 
 # 1. Instantiate with your API key
