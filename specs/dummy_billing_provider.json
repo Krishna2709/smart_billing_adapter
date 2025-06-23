@@ -1,0 +1,186 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "DummyBilling API",
+    "version": "1.0.0",
+    "description": "Minimal demo Swagger for a fictitious billing platform so you can exercise the LLM‑powered adapter generator."
+  },
+  "servers": [
+    { "url": "https://api.dummybilling.com" }
+  ],
+  "security": [ { "ApiKeyAuth": [] } ],
+  "paths": {
+    "/customers": {
+      "post": {
+        "summary": "Create Customer",
+        "operationId": "createCustomer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Customer" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Customer" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Customers",
+        "operationId": "listCustomers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Customer" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "summary": "Get Customer",
+        "operationId": "getCustomer",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Customer" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Customer",
+        "operationId": "updateCustomer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Customer" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Customer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices": {
+      "post": {
+        "summary": "Create Invoice",
+        "operationId": "createInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Invoice" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invoice" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Invoices",
+        "operationId": "listInvoices",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Invoice" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "summary": "Get Invoice",
+        "operationId": "getInvoice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invoice" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "readOnly": true },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        },
+        "required": ["name", "email"]
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "readOnly": true },
+          "customer_id": { "type": "string" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string", "example": "USD" }
+        },
+        "required": ["customer_id", "amount", "currency"]
+      }
+    }
+  }
+}

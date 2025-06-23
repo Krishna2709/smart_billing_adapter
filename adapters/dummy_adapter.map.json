@@ -1,0 +1,9 @@
+{
+  "Customer.id": "subscriberId",
+  "Customer.name": "name",
+  "Customer.email": "email",
+  "Invoice.id": "invoiceId",
+  "Invoice.customer_id": "subscriberId",
+  "Invoice.amount": "amount",
+  "Invoice.currency": "currency"
+}
