@@ -42,13 +42,58 @@ adapters/
     dummy_adapter.map.json  # canonical ↔ provider field map
 ```
 
-Open `adapters/dummy_adapter.py`—you’ll see TODOs where real HTTP calls belong.  Importing the class already works:
+Open `adapters/dummy_adapter.py`
 
 ```python
-from adapters.dummy_adapter import DUMMYAdapter, Customer
+import requests
 
-a = DUMMYAdapter(api_key="demo")
-print(a)  # prints object repr without error
+class DUMMYAdapter:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = 'https://api.dummybilling.com'
+
+    def create_customer(self, data: dict) -> str:
+
+        headers = {'X-API-Key': self.api_key, 'Content-Type': 'application/json'}
+        response = requests.post(f'{self.base_url}/customers', json=data, headers=headers)
+
+        if response.status_code == 201:
+            return response.json()['id']  # Return the provider id
+        else:
+            response.raise_for_status()
+
+    def get_invoice(self, inv_id: str) -> dict:
+        
+        headers = {'X-API-Key': self.api_key}
+        response = requests.get(f'{self.base_url}/invoices/{inv_id}', headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+```
+
+Sample Usage:
+```
+from adapters.dummy_adapter import DUMMYAdapter
+
+# 1. Instantiate with your API key
+adapter = DUMMYAdapter(api_key="sk-demo")
+
+# 2. Create a customer using your canonical data model
+canonical_customer = {
+    "id": "cust_123",
+    "name": "Alice Smith",
+    "email": "alice@example.com"
+}
+
+# 3. The adapter uses the mapping JSON behind the scenes
+provider_customer_id = adapter.create_customer(canonical_customer)
+print("New provider ID:", provider_customer_id)
+
+# 4. Fetch an invoice by ID
+invoice = adapter.get_invoice("inv_456")
+print("Invoice amount:", invoice["amount"], invoice["currency"])
 ```
 
 ---
@@ -65,26 +110,49 @@ You now have `gigtel_adapter.py` and `gigtel_adapter.map.json`.
 
 ---
 
+GigTel Mapping:
+```json
+{
+  "User.id": "userId",
+  "User.name": "userName",
+  "User.email": "userEmail",
+  "User.phone": "userPhone",
+  "Domain.id": "domainId",
+  "Domain.name": "domainName",
+  "Address.id": "addressId",
+  "Address.street": "addressStreet",
+  "Address.city": "addressCity",
+  "Address.state": "addressState",
+  "Address.zip": "addressZip",
+  "PhoneNumber.id": "phoneNumberId",
+  "PhoneNumber.number": "phoneNumber",
+  "Invoice.id": "invoiceId",
+  "Invoice.amount": "invoiceAmount",
+  "Invoice.date": "invoiceDate"
+}
+```
+
 ## 4 – Filling in the blanks
 
 ```python
-# adapters/gigtel_adapter.py  (excerpt – replace TODOs)
-import httpx
+import requests
 
 class GIGTELAdapter:
-    def __init__(self, token: str, base_url: str = "https://api.gigtel.com"):
-        self._client = httpx.Client(base_url=base_url, headers={"Authorization": f"Bearer {token}"})
+    def __init__(self, auth_token: str, base_url: str = 'https://api.gigtel.com/v0'):
+        self.auth_token = auth_token
+        self.base_url = base_url
 
-    def create_customer(self, data: Customer) -> str:
-        resp = self._client.post("/v0/domains/{domain}/users/", json={
-            "user": data.id,
-            "name-first-name": data.name.split()[0],
-            "name-last-name":  data.name.split()[‑1],
-            "email": data.email,
-            "user-scope": "Basic User"
-        })
-        resp.raise_for_status()
-        return resp.json()["user"]
+    def create_customer(self, data: dict) -> str:
+        # Endpoint: /v0/domains/{domain}/users/
+        response = requests.post(f'{self.base_url}/domains/{data['domain']}/users/', json=data, headers={'Authorization': self.auth_token})
+        return response.json().get('id')
+        # return 'stubbed_user_id'
+
+    def get_invoice(self, inv_id: str) -> dict:
+        # Endpoint: /v0/invoices/{inv_id}
+        response = requests.get(f'{self.base_url}/invoices/{inv_id}', headers={'Authorization': self.auth_token})
+        return response.json()
+        # return {'invoiceId': inv_id, 'amount': 100, 'date': '2023-10-01'}
 ```
 
 Use the **mapping JSON** to translate field names programmatically rather than hard‑coding.
@@ -126,6 +194,3 @@ rm -rf adapters  # delete all generated code and maps
 Re‑run the generator any time—the script will recreate the folder from scratch.
 
 ---
-
-**Enjoy integrating billing platforms the lazy, LLM‑powered way!**
-
